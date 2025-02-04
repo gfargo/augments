@@ -540,7 +540,7 @@ def generate_tts(
     text: str,
     output_filename: str,
     voice_types: List[str] = ['standard'],
-    regions: List[str] = ['None'],
+    regions: List[str] = ['us', 'gb', 'au', 'in'],
     use_google_cloud: bool = True
 ) -> bool:
     """
