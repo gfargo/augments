@@ -294,11 +294,14 @@ If you've made changes to the codebase:
 The tools can be configured through environment variables in your `.env` file:
 
 ```env
-# OpenAI Integration
-OPENAI_API_KEY=your-api-key
+# Debug Configuration
+AUGMENTS_DEBUG=1                      # Enable detailed debug output
+DEBUG=1                              # Enable basic debug output
 
-# LLaMA Integration (coming soon)
-LLAMA_MODEL_PATH=/path/to/model
+# AI Integration
+OPENAI_API_KEY=your-api-key          # OpenAI API key
+OLLAMA_DEFAULT_MODEL=deepseek-r1:8b  # Default Ollama model to use
+LLAMA_MODEL_PATH=/path/to/model      # Path to local LLaMA model (coming soon)
 
 # Custom Configuration
 DESKTOP_PATH=/custom/path/to/desktop  # Override default Desktop path
