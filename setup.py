@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="augments",
@@ -11,5 +11,6 @@ setup(
         "pyperclip>=1.8.2",
         "pytest>=7.4.0",
         "gTTS>=2.3.2",
+        "google-cloud-texttospeech>=2.14.0",
     ],
 )
