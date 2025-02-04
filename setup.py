@@ -12,5 +12,6 @@ setup(
         "pytest>=7.4.0",
         "gTTS>=2.3.2",
         "google-cloud-texttospeech>=2.14.0",
+        "ollama>=0.1.6",
     ],
 )
