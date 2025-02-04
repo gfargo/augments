@@ -52,7 +52,7 @@ if [ $CLEAN -eq 1 ]; then
 fi
 
 # Check if virtual environment exists
-if [ ! -d ~/.config/augment/venv ]; then
+if [ ! -d ~/.config/augments/venv ]; then
     echo "Virtual environment not found. Running full install..."
     ./install.sh ${FORCE_SHELL:+--shell "$FORCE_SHELL"}
     exit 0
@@ -61,15 +61,15 @@ fi
 echo "Updating installation..."
 
 # Activate virtual environment
-source ~/.config/augment/venv/bin/activate
+source ~/.config/augments/venv/bin/activate
 
 # Update pip and reinstall package
 python -m pip install --upgrade pip
 pip install -e .
 
 # Update scripts
-rm -rf ~/.config/augment/scripts
-cp -r "$(pwd)/scripts" ~/.config/augment/
-chmod +x ~/.config/augment/scripts/*.py
+rm -rf ~/.config/augments/scripts
+cp -r "$(pwd)/scripts" ~/.config/augments/
+chmod +x ~/.config/augments/scripts/*.py
 
 echo "Update complete! Your scripts are now up to date."
