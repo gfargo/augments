@@ -1,5 +1,6 @@
 .env
 
+prompts/
 
 # General
 .DS_Store
