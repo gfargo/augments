@@ -410,35 +410,173 @@ def openai_completion(prompt: str, model: str = "gpt-3.5-turbo",
         return None
 
 # Text-to-Speech Functions
-def get_random_voice() -> str:
+# Available voice types and their voices
+AVAILABLE_VOICES = {
+    'standard': [
+        # Australia
+        'en-AU-Standard-A', 'en-AU-Standard-B', 'en-AU-Standard-C', 'en-AU-Standard-D',
+        # UK
+        'en-GB-Standard-A', 'en-GB-Standard-B', 'en-GB-Standard-C', 'en-GB-Standard-D',
+        'en-GB-Standard-F', 'en-GB-Standard-N', 'en-GB-Standard-O',
+        # India
+        'en-IN-Standard-A', 'en-IN-Standard-B', 'en-IN-Standard-C', 'en-IN-Standard-D',
+        'en-IN-Standard-E', 'en-IN-Standard-F',
+        # US
+        'en-US-Standard-A', 'en-US-Standard-B', 'en-US-Standard-C', 'en-US-Standard-D',
+        'en-US-Standard-E', 'en-US-Standard-F', 'en-US-Standard-G', 'en-US-Standard-H',
+        'en-US-Standard-I', 'en-US-Standard-J'
+    ],
+    'premium': [
+        # Australia
+        'en-AU-Neural2-A', 'en-AU-Neural2-B', 'en-AU-Neural2-C', 'en-AU-Neural2-D',
+        'en-AU-News-E', 'en-AU-News-F', 'en-AU-News-G',
+        'en-AU-Polyglot-1',
+        'en-AU-Wavenet-A', 'en-AU-Wavenet-B', 'en-AU-Wavenet-C', 'en-AU-Wavenet-D',
+        # UK
+        'en-GB-Neural2-A', 'en-GB-Neural2-B', 'en-GB-Neural2-C', 'en-GB-Neural2-D',
+        'en-GB-Neural2-F',
+        'en-GB-News-G', 'en-GB-News-H', 'en-GB-News-I', 'en-GB-News-J',
+        'en-GB-News-K', 'en-GB-News-L', 'en-GB-News-M',
+        'en-GB-Wavenet-A', 'en-GB-Wavenet-B', 'en-GB-Wavenet-C', 'en-GB-Wavenet-D',
+        'en-GB-Wavenet-F',
+        # India
+        'en-IN-Neural2-A', 'en-IN-Neural2-B', 'en-IN-Neural2-C', 'en-IN-Neural2-D',
+        'en-IN-Wavenet-A', 'en-IN-Wavenet-B', 'en-IN-Wavenet-C', 'en-IN-Wavenet-D',
+        'en-IN-Wavenet-E', 'en-IN-Wavenet-F',
+        # US
+        'en-US-Neural2-A', 'en-US-Neural2-C', 'en-US-Neural2-D', 'en-US-Neural2-E',
+        'en-US-Neural2-F', 'en-US-Neural2-G', 'en-US-Neural2-H', 'en-US-Neural2-I',
+        'en-US-Neural2-J',
+        'en-US-News-K', 'en-US-News-L', 'en-US-News-N',
+        'en-US-Polyglot-1',
+        'en-US-Wavenet-A', 'en-US-Wavenet-B', 'en-US-Wavenet-C', 'en-US-Wavenet-D',
+        'en-US-Wavenet-E', 'en-US-Wavenet-F', 'en-US-Wavenet-G', 'en-US-Wavenet-H',
+        'en-US-Wavenet-I', 'en-US-Wavenet-J'
+    ],
+    'studio': [
+        'en-GB-Studio-B', 'en-GB-Studio-C',
+        'en-US-Studio-O', 'en-US-Studio-Q'
+    ]
+}
+
+def get_random_voice(voice_types: List[str] = ['standard']) -> str:
     """
-    Return a random TTS voice.
+    Return a random TTS voice from specified voice types.
+    
+    Args:
+        voice_types: List of voice types to include. Valid options are:
+                    'standard' - Free standard voices
+                    'premium' - Premium voices (Neural2, News, Wavenet)
+                    'studio' - Studio quality voices
+                    Default is ['standard'] for free voices only.
     
     Returns:
         Random voice identifier string
+    
+    Raises:
+        ValueError: If no valid voice types are provided or if specified types don't exist
     """
-    voices = [
-        "en-US-Standard-I", "en-US-Wavenet-H",
-        "en-US-Wavenet-D", "en-GB-Standard-A",
-        "en-GB-Wavenet-B"
-    ]
-    return random.choice(voices)
+    # Validate voice types
+    valid_types = set(AVAILABLE_VOICES.keys())
+    requested_types = set(voice_types)
+    invalid_types = requested_types - valid_types
+    
+    if invalid_types:
+        raise ValueError(f"Invalid voice type(s): {', '.join(invalid_types)}. "
+                        f"Valid types are: {', '.join(valid_types)}")
+    
+    # Combine voices from requested types
+    available_voices = []
+    for voice_type in voice_types:
+        available_voices.extend(AVAILABLE_VOICES[voice_type])
+    
+    if not available_voices:
+        raise ValueError("No voices available for the specified types")
+    
+    return random.choice(available_voices)
 
-def generate_tts(text: str, output_filename: str) -> bool:
+def generate_tts(text: str, output_filename: str, voice_types: List[str] = ['standard'], use_google_cloud: bool = True) -> bool:
     """
-    Generate Text-to-Speech audio file using gTTS.
+    Generate Text-to-Speech audio file using either Google Cloud Text-to-Speech (preferred) or gTTS (fallback).
     
     Args:
         text: Text to convert to speech
         output_filename: Path to save the audio file
+        voice_types: List of voice types to use. Options:
+                    'standard' - Free standard voices (default)
+                    'premium' - Premium voices (Neural2, News, Wavenet)
+                    'studio' - Studio quality voices
+        use_google_cloud: Whether to try Google Cloud TTS first (defaults to True)
     
     Returns:
         True if successful, False otherwise
     """
+    print(f"Generating audio file: {output_filename}")
+
+    if use_google_cloud:
+        try:
+            from google.cloud import texttospeech
+            print("Using Google Cloud Text-to-Speech")
+            print(f"Using voice types: {', '.join(voice_types)}")
+            
+            # Get a random voice from specified types
+            try:
+                voice_name = get_random_voice(voice_types)
+                print(f"Selected voice: {voice_name}")
+                
+                # Parse voice name to get language code and voice name
+                # Format is like 'en-US-Standard-A'
+                lang_code = '-'.join(voice_name.split('-')[:2])  # e.g., 'en-US'
+                
+            except ValueError as e:
+                print(f"Error selecting voice: {e}")
+                return False
+            
+            # Instantiate the client
+            client = texttospeech.TextToSpeechClient()
+            
+            # Set the text input to be synthesized
+            synthesis_input = texttospeech.SynthesisInput(text=text)
+            
+            # Build the voice request
+            voice = texttospeech.VoiceSelectionParams(
+                language_code=lang_code,
+                name=voice_name
+            )
+            
+            # Select the type of audio file
+            audio_config = texttospeech.AudioConfig(
+                audio_encoding=texttospeech.AudioEncoding.MP3,
+                speaking_rate=1.1  # Slightly faster than default
+            )
+            
+            # Perform the text-to-speech request
+            response = client.synthesize_speech(
+                input=synthesis_input,
+                voice=voice,
+                audio_config=audio_config
+            )
+            
+            # Write the binary audio content to file
+            with open(output_filename, "wb") as out:
+                out.write(response.audio_content)
+                
+            if os.path.exists(output_filename):
+                print(f"✓ Audio file created successfully ({os.path.getsize(output_filename)} bytes)")
+                return True
+                
+        except Exception as e:
+            print(f"Error with Google Cloud TTS: {e}")
+            if "google.api_core" in str(e):
+                print("⚠️  Google Cloud credentials not properly configured")
+            print("Falling back to gTTS...")
+    else:
+        print("Google Cloud TTS disabled, using gTTS")
+    
+    # Fallback to gTTS
     try:
         from gtts import gTTS
-        
-        print(f"Generating audio file: {output_filename}")
+        print("Using gTTS (fallback TTS engine)")
         
         # Create TTS
         tts = gTTS(text=text, lang='en', slow=False)
@@ -447,14 +585,14 @@ def generate_tts(text: str, output_filename: str) -> bool:
         tts.save(output_filename)
         
         if os.path.exists(output_filename):
-            print(f"✓ Audio file created successfully ({os.path.getsize(output_filename)} bytes)")
+            print(f"✓ Audio file created successfully using gTTS ({os.path.getsize(output_filename)} bytes)")
             return True
         else:
             print("✗ Failed to create audio file")
             return False
             
     except Exception as e:
-        print(f"Error generating TTS: {e}")
+        print(f"Error with fallback gTTS: {e}")
         return False
 
 # File and Path Utilities

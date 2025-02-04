@@ -58,11 +58,21 @@ A collection of command-line tools for enhancing your workflow with AI-powered f
    ./install.sh --shell zsh --debug
    ```
 
-3. Create and configure your environment file (optional):
+3. Create and configure your environment file:
    ```bash
    cp .env.example .env
    # Edit .env to add your API keys
    ```
+
+4. (Optional) Set up Google Cloud Text-to-Speech for enhanced voice quality:
+   - Create a Google Cloud project
+   - Enable the Cloud Text-to-Speech API
+   - Create a service account and download credentials
+   - Set the credentials path in your .env:
+     ```bash
+     GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/credentials.json
+     ```
+   Note: If Google Cloud TTS is not configured, the system will automatically fall back to using gTTS (no setup required).
 
 ## Available Commands
 
