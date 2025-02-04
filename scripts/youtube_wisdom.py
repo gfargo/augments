@@ -10,26 +10,26 @@ import argparse
 import concurrent.futures
 import os
 
-from augments.lib.utils import (
-    generate_tts, get_transcript, get_video_metadata,
-    openai_completion, run_fabric_pattern, get_desktop_path
-)
+from augments.lib.progress import (LoaderStyle, show_parallel_progress,
+                                   track_progress, with_progress)
+from augments.lib.utils import (generate_tts, get_desktop_path, get_transcript,
+                                get_video_metadata, openai_completion,
+                                run_fabric_pattern)
+
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 def parallel_process(transcript):
     """
     Demonstrate concurrent extraction of summary, wisdom, links.
     """
-    results = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-        tasks = {
-            executor.submit(run_fabric_pattern, transcript, "summarize"): "summary",
-            executor.submit(run_fabric_pattern, transcript, "extract_wisdom"): "wisdom",
-            executor.submit(run_fabric_pattern, transcript, "extract_references"): "links",
-        }
-        for fut in concurrent.futures.as_completed(tasks):
-            key = tasks[fut]
-            results[key] = fut.result()
-    return results.get("summary"), results.get("wisdom"), results.get("links")
+    operations = [
+        ("Generating summary", lambda: run_fabric_pattern(transcript, "summarize")),
+        ("Extracting wisdom", lambda: run_fabric_pattern(transcript, "extract_wisdom")),
+        ("Finding references", lambda: run_fabric_pattern(transcript, "extract_references"))
+    ]
+    
+    results = show_parallel_progress(operations)
+    return results[0], results[1], results[2]  # summary, wisdom, links
 
 def create_markdown(metadata, summary, wisdom, links, audio_file):
     """
@@ -77,6 +77,7 @@ def create_markdown(metadata, summary, wisdom, links, audio_file):
 {metadata.description}
 ```"""
 
+@with_progress("Initializing YouTube Wisdom", LoaderStyle.MOON)
 def main():
     parser = argparse.ArgumentParser(description="Extract wisdom from YouTube videos.")
     parser.add_argument("url", help="YouTube video URL")
@@ -85,51 +86,47 @@ def main():
     url = args.url
     
     # Get video metadata
-    metadata = get_video_metadata(url)
-    if not metadata:
-        print("Could not retrieve video metadata.")
-        return
+    with track_progress("Fetching video metadata", LoaderStyle.DOTS):
+        metadata = get_video_metadata(url)
+        if not metadata:
+            print("❌ Could not retrieve video metadata.")
+            return
 
     # Get transcript
-    transcript = get_transcript(url)
-    if not transcript:
-        print("No transcript available, exiting.")
-        return
+    with track_progress("Downloading transcript", LoaderStyle.PULSE):
+        transcript = get_transcript(url)
+        if not transcript:
+            print("❌ No transcript available, exiting.")
+            return
 
-    print(f"\nProcessing video: {metadata}")
+    print(f"\n📽️  Processing video: {metadata.title}")
     summary, wisdom, links = parallel_process(transcript)
 
     # Optionally enhance wisdom with OpenAI
-    if wisdom:
-        prompt = f"Enhance and refine this text:\n\n{wisdom}"
-        improved_wisdom = openai_completion(prompt)
-        if improved_wisdom:
-            wisdom = improved_wisdom
+    if wisdom and OPENAI_API_KEY:
+        with track_progress("Enhancing insights with AI", LoaderStyle.BRAILLE):
+            prompt = f"Enhance and refine this text:\n\n{wisdom}"
+            improved_wisdom = openai_completion(prompt)
+            if improved_wisdom:
+                wisdom = improved_wisdom
 
     # Generate audio from the summary
+    audio_file = None
     if summary:
-        print("\nGenerating audio summary...")
         audio_filename = f"{metadata.get_filename_prefix()}-summary.mp3"
         audio_path = get_desktop_path(audio_filename)
         
         if generate_tts(summary, audio_path):
             # Use relative path in markdown for better portability
             audio_file = audio_filename
-        else:
-            print("Warning: Audio generation failed, skipping audio section in markdown")
-            audio_file = None
-    else:
-        audio_file = None
 
-    # Create Markdown
-    markdown = create_markdown(metadata, summary, wisdom, links, audio_file)
-
-    # Write the output to Desktop
-    output_filename = get_desktop_path(f"{metadata.get_filename_prefix()}.md")
-    with open(output_filename, "w", encoding="utf-8") as f:
-        f.write(markdown)
-
-    print(f"\nMarkdown output saved to {output_filename}")
+    # Create and save markdown
+    with track_progress("Creating markdown document", LoaderStyle.BAR):
+        markdown = create_markdown(metadata, summary, wisdom, links, audio_file)
+        output_filename = get_desktop_path(f"{metadata.get_filename_prefix()}.md")
+        with open(output_filename, "w", encoding="utf-8") as f:
+            f.write(markdown)
+        print(f"\n✨ Markdown output saved to {output_filename}")
 
 if __name__ == "__main__":
     main()
