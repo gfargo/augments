@@ -1,10 +1,11 @@
-import subprocess
-import shlex
-import os
-import re
 import json
+import os
 import random
-from typing import Optional, Union, List, Tuple, Dict
+import re
+import shlex
+import subprocess
+from typing import Dict, List, Optional, Tuple, Union
+
 from dotenv import load_dotenv
 
 try:
@@ -575,49 +576,65 @@ def get_video_id(url: str) -> Optional[str]:
         print("Invalid YouTube URL.")
         return None
 
-def get_transcript(url: str, save: bool = True, format: str = 'vtt') -> Optional[str]:
+def get_transcript(url: str, detailed: bool = False) -> Optional[str]:
     """
-    Use yt-dlp to get the transcript of a YouTube video.
+    Get the transcript of a YouTube video.
     
     Args:
         url: YouTube video URL
-        save: Whether to save the transcript as an artifact
-        format: Transcript format ('vtt' or 'srt')
+        detailed: If True, returns full subtitle data including timestamps.
+                 If False (default), returns a simplified transcript better suited for AI processing.
     
     Returns:
         Video transcript text, or None if not available
-    """
-    video_id = get_video_id(url)
-    if not video_id:
-        return None
+    
+    Example:
+        >>> # Get simple transcript
+        >>> transcript = get_transcript("https://youtube.com/watch?v=...")
+        >>> print(transcript)
+        'This is the video content...'
         
-    # Check if we already have this transcript
-    transcript_file = f"{video_id}.{format}"
-    existing_transcript = load_artifact('transcripts', transcript_file)
-    if existing_transcript:
-        print(f"Using cached transcript: {transcript_file}")
-        return existing_transcript
-    
-    # Get JSON info from yt-dlp
-    json_output = run_command(f"yt-dlp --write-auto-subs --skip-download --sub-lang en --print-json {url}")
-    if not json_output:
+        >>> # Get detailed transcript with timestamps
+        >>> detailed = get_transcript("https://youtube.com/watch?v=...", detailed=True)
+        >>> print(detailed)
+        '[00:00:00] This is the video content...'
+    """
+    if detailed:
+        # Use yt-dlp for detailed transcript with timestamps
+        json_output = run_command(f"yt-dlp --write-auto-subs --skip-download --sub-lang en --print-json {url}")
+        if not json_output:
+            return None
+        
+        try:
+            parsed = json.loads(json_output)
+            sub_url = parsed["automatic_captions"]["en"][0]["url"]
+            transcript = run_command(f"curl {sub_url}")
+            if not transcript:
+                return None
+            
+            # TODO: Parse VTT format into a more readable timestamped format
+            # This could be enhanced to return a structured format with timestamps
+            return transcript
+            
+        except (KeyError, IndexError, json.JSONDecodeError):
+            print("No English subtitles found.")
+            return None
+    else:
+        # Use simpler transcript format better suited for AI processing
+        video_id = get_video_id(url)
+        if not video_id:
+            return None
+            
+        # Check if we have a cached version
+        cached = load_artifact('transcripts', f"{video_id}.txt")
+        if cached:
+            return cached
+            
+        # Get transcript using yt command
+        transcript = run_command(f"yt --transcript {url}")
+        if transcript:
+            # Cache the transcript for future use
+            save_artifact('transcripts', f"{video_id}.txt", transcript)
+            return transcript
+            
         return None
-    
-    try:
-        parsed = json.loads(json_output)
-        sub_url = parsed["automatic_captions"]["en"][0]["url"]
-    except (KeyError, IndexError, json.JSONDecodeError):
-        print("No English subtitles found.")
-        return None
-    
-    # Download the actual subtitle file
-    transcript = run_command(f"curl {sub_url}")
-    if not transcript:
-        return None
-    
-    # Save transcript if requested
-    if save:
-        save_artifact('transcripts', transcript_file, transcript)
-        print(f"Saved transcript: {transcript_file}")
-    
-    return transcript

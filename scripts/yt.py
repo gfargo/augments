@@ -8,10 +8,10 @@ A collection of YouTube utilities for quick access to video information.
 import argparse
 import json
 import sys
-from augments.lib.utils import (
-    get_video_metadata, get_transcript, get_video_id,
-    run_command
-)
+
+from augments.lib.utils import (get_transcript, get_video_id,
+                                get_video_metadata, run_command)
+
 
 def print_json(data):
     """Print data as formatted JSON."""
