@@ -20,8 +20,9 @@ A collection of command-line tools for enhancing your workflow with AI-powered f
   - Save analysis in markdown format
 
 - 🤖 **AI Integration**
-  - Optional OpenAI integration for enhanced analysis
-  - Support for local LLaMA models (coming soon)
+  - Local AI processing with Ollama
+  - Multiple models for different tasks (code, text, analysis)
+  - Optional OpenAI integration for enhanced capabilities
   - Fabric pattern processing for consistent results
 
 - 📦 **Artifact Management**
@@ -32,11 +33,13 @@ A collection of command-line tools for enhancing your workflow with AI-powered f
 
 - 🔧 **Developer-Friendly**
   - Clean, modular Python codebase
+  - Beautiful progress indicators
   - Easy to extend with new commands
   - Virtual environment isolation
   - Comprehensive logging and error handling
   - Extensive test coverage
   - Well-documented utilities
+  - Debug mode for development
 
 ## Installation
 
@@ -309,11 +312,13 @@ DESKTOP_PATH=/custom/path/to/desktop  # Override default Desktop path
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch
-3. Write tests for your changes
-4. Ensure all tests pass
-5. Submit a Pull Request
+Want to help build the future of information processing? Here's how to get involved:
+
+- 🐛 Found a bug or have an idea? [Open an issue on GitHub](https://github.com/username/augments/issues)
+- 💡 Want to contribute? Check out our [GitHub repository](https://github.com/username/augments)
+- 💬 Have questions? Join our [Discord community](discord-link)
+
+Let's build better tools together! 🚀
 
 ## License
 
