@@ -7,9 +7,15 @@ source "$(dirname "$0")/scripts/shell/logging.sh"
 FORCE_SHELL=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --shell) FORCE_SHELL="$2"; shift ;;
-        --debug) DEBUG=1 ;;
-        *) log_error "Unknown parameter: $1"; exit 1 ;;
+    --shell)
+        FORCE_SHELL="$2"
+        shift
+        ;;
+    --debug) DEBUG=1 ;;
+    *)
+        log_error "Unknown parameter: $1"
+        exit 1
+        ;;
     esac
     shift
 done
@@ -111,7 +117,7 @@ status_line "ok" "pip upgraded to $(pip --version | awk '{print $2}')"
 log_command "installing project in development mode..."
 if pip install -e . &>/dev/null; then
     status_line "ok" "Project installed successfully"
-    
+
     # Show installed packages
     log_detail "Installed packages:"
     pip freeze | grep -v "^-e" | while read package; do
@@ -144,7 +150,7 @@ log_command "copying scripts..."
 rm -rf "$CONFIG_DIR/scripts"
 if cp -r "$(pwd)/scripts" "$CONFIG_DIR/"; then
     status_line "ok" "Scripts copied"
-    
+
     # List installed scripts
     log_detail "Installed scripts:"
     for script in "$CONFIG_DIR/scripts"/*.py; do
@@ -177,18 +183,18 @@ start_section "Configuring Shell Environment"
 log_command "detecting shell configuration..."
 if [ -n "$FORCE_SHELL" ]; then
     case "$FORCE_SHELL" in
-        "zsh") 
-            SHELL_CONFIG="$HOME/.zshrc"
-            SHELL_NAME="Zsh"
-            ;;
-        "bash") 
-            SHELL_CONFIG="$HOME/.bashrc"
-            SHELL_NAME="Bash"
-            ;;
-        *) 
-            status_line "error" "Unsupported shell: $FORCE_SHELL"
-            exit 1
-            ;;
+    "zsh")
+        SHELL_CONFIG="$HOME/.zshrc"
+        SHELL_NAME="Zsh"
+        ;;
+    "bash")
+        SHELL_CONFIG="$HOME/.bashrc"
+        SHELL_NAME="Bash"
+        ;;
+    *)
+        status_line "error" "Unsupported shell: $FORCE_SHELL"
+        exit 1
+        ;;
     esac
     status_line "ok" "Using forced shell: $SHELL_NAME"
 else
@@ -222,7 +228,9 @@ log_command "configuring aliases..."
     echo "alias youtubeWisdom='\$HOME/.config/augments/venv/bin/python \$HOME/.config/augments/scripts/youtube_wisdom.py'"
     echo "alias clipboardAnalyze='\$HOME/.config/augments/venv/bin/python \$HOME/.config/augments/scripts/clipboard_analyzer.py'"
     echo "alias yt='\$HOME/.config/augments/venv/bin/python \$HOME/.config/augments/scripts/yt.py'"
-} >> "$SHELL_CONFIG"
+    echo "alias ezjq='\$HOME/.config/augments/venv/bin/python \$HOME/.config/augments/scripts/ezjq.py'"
+    echo "alias forgetThat='\$HOME/.config/augments/venv/bin/python \$HOME/.config/augments/scripts/forget_that.py'"
+} >>"$SHELL_CONFIG"
 
 status_line "ok" "Aliases configured"
 
@@ -231,6 +239,8 @@ log_detail "Available commands:"
 log_detail "  youtubeWisdom - Analyze YouTube videos"
 log_detail "  clipboardAnalyze - Process clipboard content"
 log_detail "  yt - YouTube utilities (transcript, info, download)"
+log_detail "  ezjq - Generate and document jq filters using natural language descriptions"
+log_detail "  forgetThat - Removes last shell command from history"
 
 # Try to source the shell configuration
 log_command "activating aliases..."
@@ -291,7 +301,7 @@ fi
 
 # Check command availability
 log_command "checking commands..."
-for cmd in "youtubeWisdom" "clipboardAnalyze" "yt"; do
+for cmd in "youtubeWisdom" "clipboardAnalyze" "yt" "ezjq" "forgetThat"; do
     if type "$cmd" &>/dev/null; then
         status_line "ok" "Command available: $cmd"
     else
@@ -326,5 +336,7 @@ log_detail "Try these commands:"
 log_detail "  yt --help"
 log_detail "  youtubeWisdom --help"
 log_detail "  clipboardAnalyze --help"
+log_detail "  ezjq --help"
+log_detail "  forgetThat --help"
 
 echo
