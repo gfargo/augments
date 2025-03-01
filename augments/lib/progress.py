@@ -112,7 +112,7 @@ def with_progress(message: str, style: LoaderStyle = LoaderStyle.DOTS) -> Callab
         return wrapper
     return decorator
 
-def track_progress(message: str, style: LoaderStyle = LoaderStyle.DOTS) -> None:
+def track_progress(message: str, style: LoaderStyle = LoaderStyle.DOTS) -> 'ProgressContext':
     """
     Context manager to track progress of a block of code.
     

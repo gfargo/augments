@@ -7,10 +7,14 @@ A collection of YouTube utilities for quick access to video information.
 
 import argparse
 import json
+import os
 import sys
+import time
 
 from augments.lib.utils import (get_transcript, get_video_id,
-                                get_video_metadata, run_command)
+                                get_video_metadata, run_command,
+                                get_artifact_path, get_file_info,
+                                save_artifact, format_duration)
 
 
 def print_json(data):
@@ -27,10 +31,15 @@ def handle_transcript(url, format='text', save=True):
         print(f"Duration: {format_duration(metadata.duration)}\n")
     
     # Get transcript
-    transcript = get_transcript(url, save=save, format='vtt')
+    transcript = get_transcript(url, detailed=True)  # We want detailed output for VTT format
     if not transcript:
         print("No transcript available.", file=sys.stderr)
         return 1
+        
+    # Save transcript if requested
+    if save:
+        video_id = metadata.id if metadata else get_video_id(url)
+        save_artifact('transcripts', f"{video_id}.vtt", transcript)
     
     # Handle different output formats
     if format == 'json':
@@ -189,7 +198,6 @@ def handle_cleanup(category: str, max_age: str):
         removed = 0
         for filename in files:
             filepath = os.path.join(path, filename)
-            info = get_file_info(filepath)
             age = time.time() - os.path.getmtime(filepath)
             
             if age > seconds:

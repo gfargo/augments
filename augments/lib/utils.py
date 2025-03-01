@@ -31,7 +31,7 @@ def extract_urls(text: str) -> List[str]:
     Returns:
         List of found URLs
     """
-    url_pattern = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
+    url_pattern = r'https?://(?:[-\w.]|%[\da-fA-F]{2})+(?:/[-\w./%]+)?'
     return re.findall(url_pattern, text)
 
 def extract_code_blocks(text: str) -> List[Tuple[str, str]]:

@@ -31,15 +31,18 @@ except ImportError:
 
 from .progress import track_progress, LoaderStyle
 
+# Default value for unset environment variables
+NOT_SET = 'Not set'
+
 @debug_output
 def debug_env():
     """Print debug information about environment and configuration."""
     env_model = os.getenv('OLLAMA_DEFAULT_MODEL')
     debug_vars = {
         'AUGMENTS_DEBUG': os.getenv('AUGMENTS_DEBUG', '0'),
-        'OLLAMA_DEFAULT_MODEL': env_model or 'Not set',
-        'PYTHONPATH': os.getenv('PYTHONPATH', 'Not set'),
-        'PWD': os.getenv('PWD', 'Not set')
+        'OLLAMA_DEFAULT_MODEL': env_model or NOT_SET,
+        'PYTHONPATH': os.getenv('PYTHONPATH', NOT_SET),
+        'PWD': os.getenv('PWD', NOT_SET)
     }
     
     print("\n🔍 Debug Information:")
@@ -156,10 +159,10 @@ class OllamaClient:
         self.host = host
         
         if DEBUG_MODE:
-            print(f"\n🔧 Initializing Ollama Client:")
-            print(f"   • Host: {host}")
-            print(f"   • Model: {model}")
-            print(f"   • Default Model: {DEFAULT_MODEL}")
+            print("\n🔧 Initializing Ollama Client:")
+            print("   • Host: " + host)
+            print("   • Model: " + model)
+            print("   • Default Model: " + DEFAULT_MODEL)
             print()
         
         # First check if Ollama service is running
@@ -187,9 +190,9 @@ class OllamaClient:
                     print("\nAvailable models:")
                     for m in sorted(model_names):
                         print(f"   - {m}")
-                    print(f"\n🔄 Pull the requested model with:")
-                    print(f"   ollama pull {self.model}")
-                    raise ConnectionError(f"Model {self.model} not available")
+                    print("\n🔄 Pull the requested model with:")
+                    print("   ollama pull " + self.model)
+                    raise ConnectionError("Model " + self.model + " not available")
                 
                 model_type = ModelType.get_description(self.model)
                 print(f"🤖 Using model: {self.model} ({model_type})")
