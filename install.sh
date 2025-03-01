@@ -325,6 +325,8 @@ log_subheader "Available Commands"
 log_detail "youtubeWisdom - Analyze YouTube videos"
 log_detail "clipboardAnalyze - Process clipboard content"
 log_detail "yt - YouTube utilities (transcript, info, download)"
+log_detail "ezjq - Generate and document jq filters using natural language descriptions"
+log_detail "forgetThat - Removes last shell command from history"
 
 log_subheader "Next Steps"
 log_info "To start using Augments, either:"
