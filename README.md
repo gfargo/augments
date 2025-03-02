@@ -44,12 +44,14 @@ A collection of command-line tools for enhancing your workflow with AI-powered f
 ## Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/username/Augments.git
    cd Augments
    ```
 
 2. Run the installation script:
+
    ```bash
    # For zsh users
    ./install.sh --shell zsh
@@ -62,6 +64,7 @@ A collection of command-line tools for enhancing your workflow with AI-powered f
    ```
 
 3. Create and configure your environment file:
+
    ```bash
    cp .env.example .env
    # Edit .env to add your API keys
@@ -72,15 +75,19 @@ A collection of command-line tools for enhancing your workflow with AI-powered f
    - Enable the Cloud Text-to-Speech API
    - Create a service account and download credentials
    - Set the credentials path in your .env:
+
      ```bash
      GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/credentials.json
      ```
+
    Note: If Google Cloud TTS is not configured, the system will automatically fall back to using gTTS (no setup required).
 
 ## Available Commands
 
 ### youtubeWisdom
+
 Extracts and analyzes YouTube video transcripts:
+
 ```bash
 # Basic analysis
 youtubeWisdom "https://www.youtube.com/watch?v=..."
@@ -93,7 +100,9 @@ youtubeWisdom "https://www.youtube.com/watch?v=..."
 ```
 
 ### clipboardAnalyze
+
 Analyzes text from your clipboard:
+
 ```bash
 # Analyze with auto-generated title
 clipboardAnalyze
@@ -103,7 +112,9 @@ clipboardAnalyze --title "My Analysis"
 ```
 
 ### yt
+
 YouTube utilities for quick access to video information:
+
 ```bash
 # Get video transcript
 yt --transcript "https://www.youtube.com/watch?v=..."
@@ -134,7 +145,9 @@ yt --cleanup downloads --max-age 24h
 ```
 
 ### Artifact Management
+
 All generated files are stored in `~/.config/augments/artifacts/`:
+
 ```
 ~/.config/augments/artifacts/
 ├── transcripts/          # Video transcripts (.vtt, .srt)
@@ -144,6 +157,7 @@ All generated files are stored in `~/.config/augments/artifacts/`:
 ```
 
 You can manage artifacts using the `yt` command:
+
 ```bash
 # List all artifacts
 yt --list all
@@ -155,6 +169,7 @@ yt --cleanup all --max-age 7d
 ## Development
 
 ### Running Tests
+
 ```bash
 # Run all tests
 pytest tests/
@@ -174,6 +189,7 @@ pytest -v tests/
 The project provides several utility functions in `augments.lib.utils`:
 
 #### Text Processing
+
 ```python
 # Clean filenames
 safe_name = sanitize_filename("unsafe/file:name.txt")
@@ -186,6 +202,7 @@ blocks = extract_code_blocks("```python\nprint('hello')\n```")
 ```
 
 #### Time and Date
+
 ```python
 # Format duration
 time_str = format_duration(3661)  # "01:01:01"
@@ -198,6 +215,7 @@ seconds = parse_duration("7d")  # 604800
 ```
 
 #### File Management
+
 ```python
 # Get unique filename
 unique = get_unique_filename("existing.txt")  # "existing_1.txt"
@@ -235,11 +253,13 @@ The project includes comprehensive tests for core utilities:
   - File operations
 
 Run the tests with:
+
 ```bash
 pytest -v tests/
 ```
 
 ### Project Structure
+
 ```
 Augments/
 ├── README.md
@@ -258,6 +278,8 @@ Augments/
 │   ├── youtube_wisdom.py
 │   ├── clipboard_analyzer.py
 │   ├── yt.py          # YouTube utilities
+│   ├── ezjq.py        # Easy JQ Query tool
+│   ├── forget_that.py # Forget last command in history
 │   ├── shell/         # Shell utilities
 │   │   └── logging.sh
 │   ├── custom/        # User scripts
@@ -271,11 +293,13 @@ Augments/
 ### Creating New Commands
 
 Use the create_command.sh script to generate new command templates:
+
 ```bash
 ./create_command.sh myNewCommand
 ```
 
 This will:
+
 1. Create a new Python script from the template
 2. Add necessary imports and boilerplate
 3. Create a corresponding test file
@@ -284,6 +308,7 @@ This will:
 ### Updating the Installation
 
 If you've made changes to the codebase:
+
 ```bash
 # Quick update (reinstall package and update scripts)
 ./update.sh
@@ -319,6 +344,10 @@ Want to help build the future of information processing? Here's how to get invol
 - 💬 Have questions? Join our [Discord community](discord-link)
 
 Let's build better tools together! 🚀
+
+## Project Stats
+
+![Alt](https://repobeats.axiom.co/api/embed/e2f150d0f81b44c17467cf623000d83414561716.svg "Repobeats analytics image")
 
 ## License
 
